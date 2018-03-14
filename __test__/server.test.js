@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('./../server/app');
 const db = require('./../db/db');
-const data = require('./../data.test');
+const data = require('./__testdata__/data.test');
 
 describe('Test the root path with GET', () =>
   test('it should respond to the GET request with a 200', () =>

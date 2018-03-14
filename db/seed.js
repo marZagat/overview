@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const db = require('./db/db.js');
+const db = require('./db.js');
 const allRestaurantData = require('./finData.json');
 
 const dbAddress = process.env.DB_ADDRESS || 'localhost';

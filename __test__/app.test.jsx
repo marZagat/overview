@@ -6,7 +6,7 @@ import axios from 'axios';
 import Overview from '../client/src/components/Overview';
 import { ids } from '../ids';
 import db from '../db/db';
-import data from '../data.test.json';
+import data from './__testdata__/data.test.json';
 
 const testInsertion = (testData) => {
   const processedData = testData.map(({ result }) => (

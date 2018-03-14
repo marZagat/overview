@@ -15,8 +15,8 @@
     "build:watch": "webpack -d --watch",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "seed": "node seed.js",
-    "docker-start": "DB_ADDRESS=database node seed.js && DB_ADDRESS=database node server/server.js"
+    "seed": "node db/seed.js",
+    "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js"
   },
   "dependencies": {
     "axios": "^0.18.0",

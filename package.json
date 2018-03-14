@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "marzagat-overview",
   "version": "",
   "description": "",
   "author": "",
@@ -11,7 +11,8 @@
     "start": "node server/server.js",
     "start-dev": "nodemon server/server.js",
     "dev-install": "yarn install--production",
-    "dev": "webpack -d --watch",
+    "build": "webpack -d",
+    "build:watch": "webpack -d --watch",
     "test": "jest --coverage",
     "seed": "node seed.js",
     "docker-start": "DB_ADDRESS=database node seed.js && DB_ADDRESS=database node server/server.js"

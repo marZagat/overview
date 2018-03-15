@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
-const db = require('./db.js');
-// const allRestaurantData = require('./finData.json');
 const faker = require('faker');
+const db = require('./db.js');
 
 const dbAddress = process.env.DB_ADDRESS || 'localhost';
 
-mongoose.connect(`mongodb://${dbAddress}/marZagat_overview`);
+mongoose.connect(`mongodb://${dbAddress}/zagattest`);
 
-const generateDocument = async (id) => {
-  return new Promise(resolve => resolve({
+const generateDocument = id => (
+  {
     _id: id,
     name: faker.commerce.productName(),
     tagline: faker.lorem.words((id % 4) + 3),
@@ -19,69 +18,37 @@ const generateDocument = async (id) => {
     zagatDecor: faker.finance.amount(0, 5, 1),
     zagatService: faker.finance.amount(0, 5, 1),
     longDescription: faker.lorem.paragraph((id % 2) + 11),
-  }));
-};
+  }
+);
 
-const seedBatch = async (min, max) => (
-  new Promise((resolve, reject) => {
+const seedBatch = (minId, maxId) => (
+  new Promise(async (resolve, reject) => {
     const docs = [];
-    for (let i = min; i < max; i++) {
+    for (let i = minId; i < maxId; i++) {
       docs.push(generateDocument(i));
     }
-    Promise.all(docs)
-      .then(results => db.insertMany(results))
-      .then(() => {
-        console.log(`successfully seeded ids ${min}-${max}`);
-        resolve();
-      })
-      .catch((error) => {
-        console.error(error);
-        reject(error);
-      });
+    try {
+      const savedDocs = await db.insertMany(docs);
+      console.log(`successfully seeded ids ${minId}-${maxId}`);
+      resolve(savedDocs);
+    } catch (error) {
+      console.error(error);
+      reject(error);
+    }
   })
 );
 
 const seedDb = async (num) => {
-  for (var i = 0; i < num; i += 5000) {
-    await seedBatch(i, i + 5000);
+  try {
+    for (let i = 0; i < num; i += 5000) {
+      await seedBatch(i, i + 5000);
+    }
+    console.log('done seeding db!');
+    mongoose.connection.close();
+  } catch (error) {
+    console.error(error);
+    mongoose.connection.close();
   }
-  console.log('done seeding db!');
-  mongoose.connection.close();
 };
 
-seedDb(10000000);
-
-
-
-
-
-
-// const seedDb = (data) => {
-//   db.count().then((counts) => {
-//     if (counts === 0) {
-//       const overviewInfo = data.map(({ result }) => (
-//         {
-//           id: result.place_id,
-//           name: result.name,
-//           tagline: result.tagline,
-//           type: 'Restaurant',
-//           vicinity: result.vicinity,
-//           priceLevel: result.price_level,
-//           zagatFood: Number(result.zagat_food),
-//           zagatDecor: Number(result.zagat_decor),
-//           zagatService: Number(result.zagat_service),
-//           longDescription: result.long_description,
-//         }
-//       ));
-//       db.insertMany(overviewInfo, () => {
-//         console.log('done seeding!');
-//         mongoose.disconnect();
-//       });
-//     } else {
-//       console.log('already seeded!');
-//       mongoose.disconnect();
-//     }
-//   });
-// };
-
-// seedDb(allRestaurantData);
+seedDb(100000);

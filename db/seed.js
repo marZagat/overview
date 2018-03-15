@@ -1,10 +1,14 @@
-const mongoose = require('mongoose');
 const faker = require('faker');
-const db = require('./db.js');
+const { MongoClient } = require('mongodb');
 
 const dbAddress = process.env.DB_ADDRESS || 'localhost';
+const url = `mongodb://${dbAddress}:27017`;
+const dbName = 'marzagat_overview';
 
-mongoose.connect(`mongodb://${dbAddress}/zagattest`);
+const settings = {
+  numToAdd: 10000000,
+  batchSize: 10000,
+};
 
 const generateDocument = id => (
   {
@@ -21,14 +25,14 @@ const generateDocument = id => (
   }
 );
 
-const seedBatch = (minId, maxId) => (
+const seedBatch = (minId, maxId, collection) => (
   new Promise(async (resolve, reject) => {
     const docs = [];
     for (let i = minId; i < maxId; i++) {
       docs.push(generateDocument(i));
     }
     try {
-      const savedDocs = await db.insertMany(docs);
+      const savedDocs = await collection.insertMany(docs);
       console.log(`successfully seeded ids ${minId}-${maxId}`);
       resolve(savedDocs);
     } catch (error) {
@@ -38,17 +42,23 @@ const seedBatch = (minId, maxId) => (
   })
 );
 
-const seedDb = async (num) => {
+const seedDb = async (num, collection) => {
   try {
-    for (let i = 0; i < num; i += 5000) {
-      await seedBatch(i, i + 5000);
+    for (let i = 0; i < num; i += settings.batchSize) {
+      await seedBatch(i, i + settings.batchSize, collection);
     }
     console.log('done seeding db!');
-    mongoose.connection.close();
   } catch (error) {
     console.error(error);
-    mongoose.connection.close();
   }
 };
 
-seedDb(100000);
+MongoClient.connect(url)
+  .then(async (client) => {
+    const collection = client.db(dbName).collection('restaurants');
+    await seedDb(settings.numToAdd, collection);
+    client.close();
+  })
+  .catch((error) => {
+    console.error(error);
+  });

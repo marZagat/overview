@@ -9,7 +9,8 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
-  res.redirect('/restaurants/ChIJUcXYWWGAhYARmjMY2bJAG2s');
+  const randomId = Math.floor(Math.random() * 10000000);
+  res.redirect(`/restaurants/${randomId}`);
 });
 
 app.use('/restaurants/:id', express.static('client/dist'));

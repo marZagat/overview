@@ -5,9 +5,10 @@ const mongoose = require('mongoose');
 const app = require('./app');
 
 const dbAddress = process.env.DB_ADDRESS || 'localhost';
+const dbName = process.env.DB_name || 'marzagat_overview';
 
 
-mongoose.connect(`mongodb://${dbAddress}/weGotData`);
+mongoose.connect(`mongodb://${dbAddress}/${dbName}`);
 // const compiler = webpack(config);
 
 // app.use(webpackDevMiddleware(compiler, {

@@ -14,13 +14,17 @@
     "build": "webpack -d",
     "build:watch": "webpack -d --watch",
     "test": "jest --coverage",
-    "seed": "node seed.js",
-    "docker-start": "DB_ADDRESS=database node seed.js && DB_ADDRESS=database node server/server.js"
+    "test:watch": "jest --watch",
+    "seed": "node db/seed.js",
+    "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "cors": "^2.8.4",
+    "dotenv": "^5.0.1",
     "express": "^4.16.2",
+    "faker": "^4.1.0",
+    "mongodb": "^3.0.4",
     "mongoose": "^5.0.7",
     "morgan": "^1.9.0",
     "prop-types": "^15.6.1",
@@ -46,7 +50,6 @@
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.7.0",
-    "faker": "^4.1.0",
     "file-loader": "^1.1.10",
     "jest": "^22.4.2",
     "jest-enzyme": "^4.2.0",

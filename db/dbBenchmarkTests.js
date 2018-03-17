@@ -37,17 +37,20 @@ const getOptions = (id) => {
 };
 
 const runTests = async (name1, name2) => {
+  console.log(`\n\nTESTING SCHEMA WITH INDEX: ${index}`);
+  console.log('===================================\n');
+
   const { client, collection } = await connectToDb();
   let testId;
 
   testId = getRandomId();
   for (let i = 0; i < 10; i++) {
-    await timer(`sequential query #${i} on ${index}`, () => (
+    await timer(`sequential individual query #${i}`, () => (
       collection.find(getOptions(testId))
     ));
   }
 
-  await timer(`1000 async queries on a single ${index}`, async () => {
+  await timer(`1000 async queries on a single item`, async () => {
     const promises = [];
     testId = getRandomId();
     for (let i = 0; i < 1000; i++) {
@@ -56,7 +59,7 @@ const runTests = async (name1, name2) => {
     return Promise.all(promises);
   });
 
-  await timer(`10000 async queries on a single ${index}`, async () => {
+  await timer(`10000 async queries on a single item`, async () => {
     const promises = [];
     testId = getRandomId();
     for (let i = 0; i < 10000; i++) {
@@ -66,7 +69,7 @@ const runTests = async (name1, name2) => {
   });
 
   let thousandIds = new Array(1000).map(() => getRandomId());
-  await timer(`1000 async queries on different ${index}s`, async () => {
+  await timer(`1000 async queries on different items`, async () => {
     const promises = [];
     thousandIds.forEach((id) => {
       promises.push(collection.find(getOptions(id)));
@@ -75,13 +78,19 @@ const runTests = async (name1, name2) => {
   });
 
   const tenThousandIds = new Array(10000).map(() => getRandomId());
-  await timer(`10000 async queries on different ${index}s`, async () => {
+  await timer(`10000 async queries on different items`, async () => {
     const promises = [];
     tenThousandIds.forEach((id) => {
       promises.push(collection.find(getOptions(id)));
     });
     return Promise.all(promises);
   });
+
+  for (let i = 0; i < 10; i++) {
+    await timer(`sequential query #${i} for a batch of 1000 documents`, () => (
+      collection.find({}).limit(1000).toArray()
+    ));
+  }
 
   client.close();
 };

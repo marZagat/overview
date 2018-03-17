@@ -21,7 +21,7 @@ const connectToDb = async () => {
 const indexDb = async (collection) => {
   const indexObj = {};
   indexObj[schemaIdName] = 1;
-  await collection.ensureIndex(indexObj, { unique: true });
+  await collection.createIndex(indexObj, { unique: true });
 };
 
 const seedBatch = (minId, maxId, collection) => (

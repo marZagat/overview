@@ -34,29 +34,52 @@ const getOptions = (id) => {
   }
 
   return options;
-}
+};
 
 const runTests = async (name1, name2) => {
   const { client, collection } = await connectToDb();
+  let testId;
 
-  let testId = 9782583;
-  await timer(`single query on ${index}`, async () => (
-    collection.find(getOptions(testId))
-  ));
+  testId = getRandomId();
+  for (let i = 0; i < 10; i++) {
+    await timer(`sequential query #${i} on ${index}`, () => (
+      collection.find(getOptions(testId))
+    ));
+  }
 
-  await timer(`1000 async queries on ${index}`, async () => {
+  await timer(`1000 async queries on a single ${index}`, async () => {
     const promises = [];
+    testId = getRandomId();
     for (let i = 0; i < 1000; i++) {
       promises.push(collection.find(getOptions(testId)));
     }
     return Promise.all(promises);
   });
 
-  await timer(`10000 async queries on ${index}`, async () => {
+  await timer(`10000 async queries on a single ${index}`, async () => {
     const promises = [];
+    testId = getRandomId();
     for (let i = 0; i < 10000; i++) {
       promises.push(collection.find(getOptions(testId)));
     }
+    return Promise.all(promises);
+  });
+
+  let thousandIds = new Array(1000).map(() => getRandomId());
+  await timer(`1000 async queries on different ${index}s`, async () => {
+    const promises = [];
+    thousandIds.forEach((id) => {
+      promises.push(collection.find(getOptions(id)));
+    });
+    return Promise.all(promises);
+  });
+
+  const tenThousandIds = new Array(10000).map(() => getRandomId());
+  await timer(`10000 async queries on different ${index}s`, async () => {
+    const promises = [];
+    tenThousandIds.forEach((id) => {
+      promises.push(collection.find(getOptions(id)));
+    });
     return Promise.all(promises);
   });
 

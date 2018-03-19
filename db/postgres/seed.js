@@ -1,4 +1,5 @@
 const { Pool, Client } = require('pg');
+const Promise = require('bluebird');
 require('dotenv').config();
 
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT } = process.env;
@@ -18,7 +19,8 @@ const dropTable = (tableName) => {
   return client.query(queryString);
 };
 
-const createTable = async (tableName) => {
+// returns a promise via client.query
+const createTable = (tableName) => {
   const queryString = `CREATE TABLE ${tableName} (
     id              int       NOT NULL,
     name            text,
@@ -29,21 +31,60 @@ const createTable = async (tableName) => {
     zagat_food      real,
     zagat_decor     real,
     zagat_service   real,
-    longDescription text,
+    long_description text,
     PRIMARY KEY (id)
   );`;
-  try {
-    const result = await client.query(queryString);
-    console.log(result);
-  } catch (error) {
-    console.error(error);
+
+  return client.query(queryString);
+};
+
+// returns a promise via client.query
+const addRow = (data, tableName) => {
+  const queryString = `INSERT INTO ${tableName} values (
+    ${data.id},
+    '${data.name}',
+    '${data.tagline}',
+    '${data.type}',
+    '${data.vicinity}',
+    ${data.priceLevel},
+    ${data.zagatFood},
+    ${data.zagatDecor},
+    ${data.zagatService},
+    '${data.longDescription}'
+  );`;
+
+  return client.query(queryString);
+};
+
+// TODO: update to generate data with faker
+const generateFakeRow = (idNum) => {
+  return {
+    id: idNum,
+    name: 'foo',
+    tagline: 'bar',
+    type: 'hello',
+    vicinity: 'world',
+    priceLevel: 3,
+    zagatFood: 1.4,
+    zagatDecor: 2.5,
+    zagatService: 4.3,
+    longDescription: 'long sentence',
+  };
+};
+
+const addRows = (numRows, tableName) => {
+  const promises = [];
+  for (let i = 0; i < numRows; i++) {
+    promises.push(addRow(generateFakeRow(i), tableName));
   }
+  return Promise.all(promises);
 };
 
 const seedDb = async (tableName) => {
   try {
     await dropTable(tableName);
     await createTable(tableName);
+    await addRows(10, tableName);
   } catch (error) {
     console.error(error);
   }

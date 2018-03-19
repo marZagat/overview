@@ -33,7 +33,6 @@ const createTable = async (tableName) => {
     PRIMARY KEY (id)
   );`;
   try {
-    await dropTable(tableName);
     const result = await client.query(queryString);
     console.log(result);
   } catch (error) {
@@ -41,6 +40,14 @@ const createTable = async (tableName) => {
   }
 };
 
-createTable('restaurants')
-  .then(() => client.end())
-  .catch(() => client.end());
+const seedDb = async (tableName) => {
+  try {
+    await dropTable(tableName);
+    await createTable(tableName);
+  } catch (error) {
+    console.error(error);
+  }
+  client.end();
+};
+
+seedDb('restaurants');

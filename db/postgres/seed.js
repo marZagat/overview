@@ -12,6 +12,12 @@ const client = new Client({
 });
 client.connect();
 
+// returns a promise via client.query
+const dropTable = (tableName) => {
+  const queryString = `DROP TABLE ${tableName};`;
+  return client.query(queryString);
+};
+
 const createTable = async (tableName) => {
   const queryString = `CREATE TABLE ${tableName} (
     id              int       NOT NULL,
@@ -27,6 +33,7 @@ const createTable = async (tableName) => {
     PRIMARY KEY (id)
   );`;
   try {
+    await dropTable(tableName);
     const result = await client.query(queryString);
     console.log(result);
   } catch (error) {

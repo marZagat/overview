@@ -17,14 +17,6 @@ const connectToDb = async () => {
   return { client, collection };
 };
 
-// const timer = async (testDescription, callback) => {
-//   const startTime = new Date().getTime();
-//   await callback();
-//   const endTime = new Date().getTime();
-//   const executionTime = endTime - startTime;
-//   console.log(`${testDescription}: executed in ${executionTime} ms`);
-// };
-
 const getId = idNum => (
   idType === 'string'
     ? idNum.toString()

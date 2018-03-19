@@ -1,5 +1,6 @@
 const { Pool, Client } = require('pg');
 const Promise = require('bluebird');
+const generateRow = require('../generateDocument');
 require('dotenv').config();
 
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT } = process.env;
@@ -56,26 +57,10 @@ const addRow = (data, tableName) => {
   return client.query(queryString);
 };
 
-// TODO: update to generate data with faker
-const generateFakeRow = (idNum) => {
-  return {
-    id: idNum,
-    name: 'foo',
-    tagline: 'bar',
-    type: 'hello',
-    vicinity: 'world',
-    priceLevel: 3,
-    zagatFood: 1.4,
-    zagatDecor: 2.5,
-    zagatService: 4.3,
-    longDescription: 'long sentence',
-  };
-};
-
 const addRows = (numRows, tableName) => {
   const promises = [];
   for (let i = 0; i < numRows; i++) {
-    promises.push(addRow(generateFakeRow(i), tableName));
+    promises.push(addRow(generateRow(i, 'id'), tableName));
   }
   return Promise.all(promises);
 };

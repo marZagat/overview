@@ -16,10 +16,12 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "seed": "node db/seed.js",
-    "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js"
+    "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js",
+    "db:benchmarks": "node db/dbBenchmarkTests.js && DB_NAME=marzagat_overview_old INDEX=id ID_TYPE=string node db/dbBenchmarkTests.js"
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "bluebird": "^3.5.1",
     "cors": "^2.8.4",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
@@ -30,7 +32,8 @@
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "stats-lite": "^2.1.0"
   },
   "devDependencies": {
     "axios-mock-adapter": "^1.14.1",

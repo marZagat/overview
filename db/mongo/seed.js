@@ -1,44 +1,11 @@
 require('dotenv').config();
-const { MongoClient } = require('mongodb');
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-const generateDocument = require('./generateDocument');
+const helpers = require('./seedHelpers.js');
 
-const dbAddress = process.env.DB_ADDRESS || 'localhost';
-const dbName = process.env.DB_NAME || 'marzagat_overview';
-const collectionName = process.env.COLLECTION_NAME || 'restaurants';
+const { connectToDb, seedBatch, disconnectFromDb } = helpers;
 const seedNum = parseInt(process.env.SEED_NUM, 10) || 10000000;
 const batchSize = parseInt(process.env.SEED_BATCH_SIZE, 10) || 15000;
-const schemaIdName = process.env.SCHEMA_ID_NAME || '_id';
-
-const connectToDb = async () => {
-  const url = `mongodb://${dbAddress}/`;
-  const client = await MongoClient.connect(url);
-  const collection = client.db(dbName).collection(collectionName);
-  return { client, collection };
-};
-
-const indexDb = async (collection) => {
-  const indexObj = {};
-  indexObj[schemaIdName] = 1;
-  await collection.createIndex(indexObj, { unique: true });
-};
-
-const seedBatch = (minId, maxId, collection) => (
-  new Promise(async (resolve, reject) => {
-    const docs = [];
-    for (let i = minId; i < maxId; i++) {
-      docs.push(generateDocument(i, schemaIdName));
-    }
-    try {
-      const savedDocs = await collection.insertMany(docs);
-      resolve(savedDocs);
-    } catch (error) {
-      console.error(error);
-      reject(error);
-    }
-  })
-);
 
 const printRunTime = (startTime, startId, endId) => {
   const runTime = (new Date().getTime() - startTime) / 1000;
@@ -49,18 +16,17 @@ const seedDb = async (startId, endId) => {
   const startTime = new Date().getTime();
 
   try {
-    const { client, collection } = await connectToDb();
-
+    const db = await connectToDb();
     // seed in batches up to endId
     for (let i = startId; i < endId; i += batchSize) {
       const batchStart = i;
       const batchEnd = Math.min(i + batchSize, endId);
-      await seedBatch(batchStart, batchEnd, collection);
+      await seedBatch(batchStart, batchEnd, db);
     }
 
     // print out the runtime and close everything out
     printRunTime(startTime, startId, endId);
-    client.close();
+    await disconnectFromDb(db);
     process.exit();
   } catch (error) {
     console.error(error);
@@ -68,12 +34,11 @@ const seedDb = async (startId, endId) => {
   }
 };
 
-const createWorkers = () => {
-  // fork workers
-  const docsPerWorker = Math.ceil(seedNum / numCPUs);
+const runWorkers = () => {
+  const recordsPerWorker = Math.ceil(seedNum / numCPUs);
   for (let i = 0; i < numCPUs; i++) {
-    const startId = i * docsPerWorker;
-    const endId = Math.min(startId + docsPerWorker, seedNum);
+    const startId = i * recordsPerWorker;
+    const endId = Math.min(startId + recordsPerWorker, seedNum);
     cluster.fork({ START_ID: startId, END_ID: endId });
   }
 
@@ -82,29 +47,36 @@ const createWorkers = () => {
   });
 };
 
-// create workers and seed db with each worker
-if (cluster.isMaster) {
-  console.log(`Master ${process.pid} is running`);
-  createWorkers();
+const runPreSeedActions = async () => {
+  if (helpers.hasOwnProperty('preSeed')) {
+    await helpers.preSeed();
+  }
+};
 
-  // create secondary index if not using `_id` field for restaurant id
-  if (schemaIdName !== '_id') {
+const runPostSeedActions = async () => {
+  if (helpers.hasOwnProperty('postSeed')) {
     process.on('beforeExit', async () => {
       try {
-        console.log(`Master ${process.pid} indexing attribute '${schemaIdName}'`);
-        const { client, collection } = await connectToDb();
-        await indexDb(collection);
-        console.log('Done indexing. closing master process now!')
-        client.close();
-        process.exit();
+        await helpers.postSeed();
       } catch (error) {
         console.error(error);
       }
+      process.exit();
     });
   }
-} else {
-  const startId = parseInt(process.env.START_ID, 10);
-  const endId = parseInt(process.env.END_ID, 10);
-  console.log(`Worker ${process.pid} starting for indices ${startId}-${endId - 1}`);
-  seedDb(startId, endId);
-}
+};
+
+const run = async () => {
+  if (cluster.isMaster) { // master process: create workers
+    console.log(`Master ${process.pid} is running`);
+    await runPreSeedActions();
+    runWorkers();
+    await runPostSeedActions();
+  } else { // worker process: seed its section of db
+    const startId = parseInt(process.env.START_ID, 10);
+    const endId = parseInt(process.env.END_ID, 10);
+    console.log(`Worker ${process.pid} starting for indices ${startId}-${endId - 1}`);
+    seedDb(startId, endId);
+  }
+};
+run();

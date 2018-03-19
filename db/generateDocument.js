@@ -1,7 +1,8 @@
 const faker = require('faker');
 
-module.exports = (id, schemaIdName) => {
-  const document = {
+module.exports = id => (
+  {
+    id,
     name: faker.commerce.productName(),
     tagline: faker.lorem.words((id % 4) + 3),
     type: faker.lorem.word(),
@@ -11,7 +12,5 @@ module.exports = (id, schemaIdName) => {
     zagatDecor: faker.finance.amount(0, 5, 1),
     zagatService: faker.finance.amount(0, 5, 1),
     longDescription: faker.lorem.paragraph((id % 2) + 11),
-  };
-  document[schemaIdName] = id;
-  return document;
-};
+  }
+);

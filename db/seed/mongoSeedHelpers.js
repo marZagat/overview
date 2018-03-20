@@ -1,6 +1,7 @@
 require('dotenv').config();
+const Promise = require('bluebird');
 const { MongoClient } = require('mongodb');
-const generateRecord = require('../generateDocument');
+const generateRecord = require('./generateRecord');
 
 const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
 
@@ -48,7 +49,7 @@ const preSeed = async () => {
   console.log('dropping old db if it exists');
   const { client, database } = await connectToDb();
   await database.dropDatabase();
-  client.close();
+  await disconnectFromDb({ client });
 };
 
 const postSeed = async () => {

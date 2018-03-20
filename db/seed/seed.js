@@ -1,11 +1,19 @@
 require('dotenv').config();
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-const helpers = require('./seedHelpers.js');
+const mongoHelpers = require('./mongoSeedHelpers.js');
+const pgHelpers = require('./pgSeedHelpers.js');
 
-const { connectToDb, seedBatch, disconnectFromDb } = helpers;
 const seedNum = parseInt(process.env.SEED_NUM, 10) || 10000000;
 const batchSize = parseInt(process.env.SEED_BATCH_SIZE, 10) || 15000;
+const DBMS = process.env.DBMS || mongo;
+
+const dbOptions = {
+  mongo: mongoHelpers,
+  postgres: pgHelpers,
+};
+const helpers = dbOptions[DBMS];
+const { connectToDb, seedBatch, disconnectFromDb } = helpers;
 
 const printRunTime = (startTime, startId, endId) => {
   const runTime = (new Date().getTime() - startTime) / 1000;

@@ -1,34 +1,32 @@
 require('dotenv').config();
-const Promise = require('bluebird');
 const { Pool, Client } = require('pg');
 const generateRecord = require('./generateRecord');
 
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT, PG_TABLENAME } = process.env;
 
 const connectToDb = () => {
-  const client = new Client({
+  const pool = new Pool({
     user: PGUSER,
     host: PGHOST,
     database: PGDATABASE,
     password: PGPASSWORD,
     port: PGPORT,
   });
-  client.connect();
-  return { client };
+  return { pool };
 };
 
-const disconnectFromDb = ({ client }) => {
-  client.end();
+const disconnectFromDb = ({ pool }) => {
+  pool.end();
 };
 
-// returns a promise via client.query
-const dropTable = ({ client }, tableName) => {
-  const queryString = `DROP TABLE ${tableName};`;
-  return client.query(queryString);
+// returns a promise via pool.query
+const dropTable = ({ pool }, tableName) => {
+  const queryString = `DROP TABLE IF EXISTS ${tableName};`;
+  return pool.query(queryString);
 };
 
-// returns a promise via client.query
-const createTable = ({ client }, tableName) => {
+// returns a promise via pool.query
+const createTable = ({ pool }, tableName) => {
   const queryString = `CREATE TABLE ${tableName} (
     id              int       NOT NULL,
     name            text,
@@ -43,56 +41,52 @@ const createTable = ({ client }, tableName) => {
     PRIMARY KEY (id)
   );`;
 
-  return client.query(queryString);
+  return pool.query(queryString);
 };
 
 const preSeed = async () => {
   console.log('Dropping existing table if it exists');
-  const { client } = await connectToDb();
-  await dropTable({ client }, PG_TABLENAME);
+  const { pool } = await connectToDb();
+  await dropTable({ pool }, PG_TABLENAME);
 
   console.log('Recreating the table with proper schema');
-  await createTable({ client }, PG_TABLENAME);
-  await disconnectFromDb({ client });
+  await createTable({ pool }, PG_TABLENAME);
+  await disconnectFromDb({ pool });
 };
 
 // TODO: indexing?
 const postSeed = async () => {
-
+  console.log('Creating unique index on id column');
+  const { pool } = await connectToDb();
+  await pool.query(`CREATE UNIQUE INDEX id_index_${PG_TABLENAME} ON ${PG_TABLENAME} (id);`);
+  await disconnectFromDb({ pool });
 };
 
-// returns a promise via client.query
-const addRow = (data, tableName, { client }) => (
-  new Promise((resolve, reject) => {
-    const queryString = `INSERT INTO ${tableName} values (
-      ${data.id},
-      '${data.name}',
-      '${data.tagline}',
-      '${data.type}',
-      '${data.vicinity}',
-      ${data.priceLevel},
-      ${data.zagatFood},
-      ${data.zagatDecor},
-      ${data.zagatService},
-      '${data.longDescription}'
-    );`;
+// returns a promise via pool.query
+const addRow = (data) => {
+  const rowValues = `(
+    ${data.id},
+    '${data.name}',
+    '${data.tagline}',
+    '${data.type}',
+    '${data.vicinity}',
+    ${data.priceLevel},
+    ${data.zagatFood},
+    ${data.zagatDecor},
+    ${data.zagatService},
+    '${data.longDescription}'
+  )`;
+  return rowValues;
+};
 
-    try {
-      resolve(client.query(queryString));
-    } catch (error) {
-      console.log('error at this query:', queryString, error);
-      reject(error);
-    }
-  })
-);
-
-const seedBatch = (minId, maxId, { client }) => {
-  const promises = [];
+const seedBatch = async (minId, maxId, { pool }) => {
+  const rowsArr = [];
   for (let i = minId; i < maxId; i++) {
     const record = generateRecord(i);
-    promises.push(addRow(record, PG_TABLENAME, { client }));
+    rowsArr.push(addRow(record));
   }
-  return Promise.all(promises);
+  const queryString = `INSERT INTO ${PG_TABLENAME} VALUES ${rowsArr.join(',')};`;
+  await pool.query(queryString);
 };
 
 module.exports = {

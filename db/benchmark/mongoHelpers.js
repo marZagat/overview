@@ -11,7 +11,16 @@ class MongoConnection {
     this.collection = null;
   }
 
-  connect() {}
+  async connect(address, dbName, collection) {
+    try {
+      this.url = `mongodb://${address}/`;
+      this.client = await MongoClient.connect(this.url);
+      this.db = await this.client.db(dbName);
+      this.collection = await this.db.collection(collection);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   disconnect() {}
 

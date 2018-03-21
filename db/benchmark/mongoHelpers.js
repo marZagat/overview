@@ -3,29 +3,38 @@ const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 
 const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
+const POOL_SIZE = parseInt(process.env.POOL_SIZE, 10) || 5;
 
 class MongoConnection {
   constructor() {
-    this.url = null;
+    this.url = `mongodb://${MONGO_ADDRESS}/`;
     this.client = null;
     this.db = null;
     this.collection = null;
+    this.poolSize = null;
   }
 
   async connect() {
     try {
-      this.url = `mongodb://${MONGO_ADDRESS}/`;
-      this.client = await MongoClient.connect(this.url);
+      this.client = await MongoClient.connect(this.url, { poolSize: POOL_SIZE });
       this.db = await this.client.db(MONGO_DB_NAME);
       this.collection = await this.db.collection(MONGO_COLLECTION);
       return this;
     } catch (error) {
-      return Promise.reject(error);
+      return console.error(error);
     }
   }
 
-  disconnect() {
-    this.client.close();
+  async disconnect() {
+    try {
+      await this.client.close();
+      this.client = null;
+      this.db = null;
+      this.collection = null;
+      this.poolSize = null;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   // returns a cursor

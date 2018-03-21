@@ -35,7 +35,59 @@ const printResults = {
   },
 };
 
-const test = testFunction => testFunction();
+const test = {
+  sameId: {
+    sync: async (db, numQueries, testId = getRandomId()) => {
+      const queryTimes = [];
+      for (let i = 0; i < numQueries; i++) {
+        const queryTime = await db.getQueryTime(testId);
+        queryTimes.push(queryTime);
+      }
+      if (numQueries === 1) {
+        printResults.one(`single synchronous query on id ${testId}`, queryTimes[0]);
+      } else {
+        printResults.stats(`${numQueries} synchronous queries on same id ${testId}`, queryTimes);
+      }
+    },
+
+    async: async (db, numQueries, testId = getRandomId()) => {
+      let queryTimes = [];
+      for (let i = 0; i < numQueries; i++) {
+        const queryTime = db.getQueryTime(testId);
+        queryTimes.push(queryTime);
+      }
+      queryTimes = await Promise.all(queryTimes);
+      if (numQueries === 1) {
+        printResults.one(`single async query on id ${testId}`, queryTimes[0]);
+      } else {
+        printResults.stats(`${numQueries} async queries on same id ${testId}`, queryTimes);
+      }
+    },
+  },
+
+  randomIds: {
+    sync: async (db, numQueries) => {
+      const queryTimes = [];
+      for (let i = 0; i < numQueries; i++) {
+        const testId = getRandomId();
+        const queryTime = await db.getQueryTime(testId);
+        queryTimes.push(queryTime);
+      }
+      printResults.stats(`${numQueries} synchronous queries on different random ids`, queryTimes);
+    },
+
+    async: async (db, numQueries) => {
+      let queryTimes = [];
+      for (let i = 0; i < numQueries; i++) {
+        const testId = getRandomId();
+        const queryTime = db.getQueryTime(testId);
+        queryTimes.push(queryTime);
+      }
+      queryTimes = await Promise.all(queryTimes);
+      printResults.stats(`${numQueries} async queries on different random ids`, queryTimes);
+    },
+  },
+};
 
 const runTests = async () => {
   console.log(`\n\ntesting ${DBMS}`);
@@ -44,54 +96,22 @@ const runTests = async () => {
   const db = await new MongoConnection().connect(MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION);
 
   // 5 synchronous queries on the same item
-  await test(async () => {
-    const testId = getRandomId();
-    for (let i = 0; i < 5; i++) {
-      const queryTime = await db.getQueryTime(testId);
-      printResults.one(`sequential query #${i + 1} on same id`, queryTime);
-    }
-  });
+  const testId = getRandomId();
+  for (let i = 0; i < 5; i++) {
+    await test.sameId.sync(db, 1, testId);
+  }
 
-  // 1,000 async queries on the same id
-  await test(async () => {
-    const queryTimePromises = [];
-    const testId = getRandomId();
-    for (let i = 0; i < 1000; i++) {
-      queryTimePromises.push(db.getQueryTime(testId));
-    }
-    const queryTimes = await Promise.all(queryTimePromises);
-    printResults.stats('1,000 async queries on same id', queryTimes);
-  });
+  await test.sameId.async(db, 1000);
 
-  // 1,000 synchronous queries on the same id
-  await test(async () => {
-    const queryTimes = [];
-    const testId = getRandomId();
-    for (let i = 0; i < 1000; i++) {
-      const queryTime = await db.getQueryTime(testId);
-      queryTimes.push(queryTime);
-    }
-    printResults.stats('1,000 synchronous queries on same id', queryTimes);
-  });
+  await test.sameId.sync(db, 1000);
 
-  // 10,000 queries on the same id
-  await test(async () => {
-  });
+  await test.sameId.async(db, 10000);
 
-  // 1,000 queries on different ids
-  await test(async () => {
+  await test.sameId.sync(db, 10000);
 
-  });
+  await test.randomIds.async(db, 1000);
 
-  // 10,000 queries on different ids
-  await test(async () => {
-
-  });
-
-  // sequential queries on a batch of 1,1000 documents
-  await test(async () => {
-
-  });
+  await test.randomIds.sync(db, 1000);
 
   db.disconnect();
 };

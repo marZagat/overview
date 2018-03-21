@@ -2,69 +2,15 @@ require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 const stats = require('stats-lite');
+const MongoConnection = require('./mongoHelpers');
 
-const dbAddress = process.env.DB_ADDRESS || 'localhost';
-const dbName = process.env.DB_NAME || 'marzagat_overview';
-const collectionName = process.env.COLLECTION_NAME || 'restaurants';
+const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
+const { DBMS } = process.env;
 const dbSize = parseInt(process.env.DB_SIZE, 10) || 10000000;
-const index = process.env.INDEX || '_id';
-const idType = process.env.ID_TYPE || 'number';
 
-const connectToDb = async () => {
-  const url = `mongodb://${dbAddress}/`;
-  const client = await MongoClient.connect(url);
-  const collection = client.db(dbName).collection(collectionName);
-  return { client, collection };
-};
+const getRandomId = () => Math.floor(Math.random() * dbSize);
 
-const getId = idNum => (
-  idType === 'string'
-    ? idNum.toString()
-    : idNum
-);
-const getRandomId = () => getId(Math.floor(Math.random() * dbSize));
-const getOptions = (id) => {
-  const options = {};
-  options[index] = id;
-  return options;
-};
-
-const getExecutionStats = (queryFunction) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { executionStats } = await queryFunction().explain();
-      if (executionStats.executionSuccess === true) {
-        resolve(executionStats);
-      } else {
-        reject(new Error('query execusionSuccess !== true'));
-      }
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-const getQueryTime = (queryFunction) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const { executionTimeMillis } = await getExecutionStats(queryFunction);
-      resolve(executionTimeMillis);
-    } catch (error) {
-      reject(error);
-    }
-  });
-};
-
-const timer = async (message, queryFunction) => {
-  try {
-    const { executionTimeMillis } = await getExecutionStats(queryFunction);
-    console.log(`${message}:\n  => success: ${executionTimeMillis} ms`);
-  } catch (error) {
-    console.warn(`${message}: UNSUCCESSFUL QUERY`, error);
-  }
-};
-
-const summaryStats = array => (
+const getSummaryStats = array => (
   {
     min: Math.min(...array),
     median: stats.median(array),
@@ -75,36 +21,57 @@ const summaryStats = array => (
   }
 );
 
+const printResults = {
+  one: (message, queryTime) => {
+    console.log(`${message}:\n  => ${queryTime} ms`);
+  },
+
+  stats: (message, queryTimes) => {
+    const { min, median, p95, p99, p995, max } = getSummaryStats(queryTimes);
+    console.log(
+      `${message} - distribution (ms):\n`,
+      ` => min: ${min} | median: ${median} | p95: ${p95} | p99: ${p99} | p995: ${p995} | max: ${max}`,
+    );
+  },
+};
+
 const test = testFunction => testFunction();
 
 const runTests = async () => {
-  console.log(`\n\nTESTING SCHEMA WITH INDEX: ${index}, ID TYPE: ${idType}`);
+  console.log(`\n\ntesting ${DBMS}`);
   console.log('===================================\n');
 
-  const { client, collection } = await connectToDb();
+  const db = await new MongoConnection().connect(MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION);
 
-  // 5 sequential queries on the same item
+  // 5 synchronous queries on the same item
   await test(async () => {
     const testId = getRandomId();
-    const options = getOptions(testId);
     for (let i = 0; i < 5; i++) {
-      await timer(`query #${i} on same id`, () => collection.find(options));
+      const queryTime = await db.getQueryTime(testId);
+      printResults.one(`sequential query #${i + 1} on same id`, queryTime);
     }
   });
 
-  // 1,000 queries on the same id
+  // 1,000 async queries on the same id
   await test(async () => {
     const queryTimePromises = [];
     const testId = getRandomId();
-    const options = getOptions(testId);
     for (let i = 0; i < 1000; i++) {
-      queryTimePromises.push(getQueryTime(() => collection.find(options)));
+      queryTimePromises.push(db.getQueryTime(testId));
     }
     const queryTimes = await Promise.all(queryTimePromises);
-    const { min, median, p95, p99, p995, max } = summaryStats(queryTimes);
+    printResults.stats('1,000 async queries on same id', queryTimes);
+  });
 
-    console.log('1,000 queries on same id: distribution (ms)');
-    console.log(`  => min: ${min} | median: ${median} | p95: ${p95} | p99: ${p99} | p995: ${p995} | max: ${max}`);
+  // 1,000 synchronous queries on the same id
+  await test(async () => {
+    const queryTimes = [];
+    const testId = getRandomId();
+    for (let i = 0; i < 1000; i++) {
+      const queryTime = await db.getQueryTime(testId);
+      queryTimes.push(queryTime);
+    }
+    printResults.stats('1,000 synchronous queries on same id', queryTimes);
   });
 
   // 10,000 queries on the same id
@@ -126,7 +93,7 @@ const runTests = async () => {
 
   });
 
-  client.close();
+  db.disconnect();
 };
 
 runTests();

@@ -2,6 +2,8 @@ require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 
+const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
+
 class MongoConnection {
   constructor() {
     this.url = null;
@@ -10,12 +12,12 @@ class MongoConnection {
     this.collection = null;
   }
 
-  async connect(address, dbName, collection) {
+  async connect() {
     try {
-      this.url = `mongodb://${address}/`;
+      this.url = `mongodb://${MONGO_ADDRESS}/`;
       this.client = await MongoClient.connect(this.url);
-      this.db = await this.client.db(dbName);
-      this.collection = await this.db.collection(collection);
+      this.db = await this.client.db(MONGO_DB_NAME);
+      this.collection = await this.db.collection(MONGO_COLLECTION);
       return this;
     } catch (error) {
       return Promise.reject(error);

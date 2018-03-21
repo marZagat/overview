@@ -3,10 +3,16 @@ const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 const stats = require('stats-lite');
 const MongoConnection = require('./mongoHelpers');
+const PgConnection = require('./pgHelpers');
 
-const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
 const { DBMS } = process.env;
 const dbSize = parseInt(process.env.DB_SIZE, 10) || 10000000;
+
+const dbOptions = {
+  mongo: MongoConnection,
+  postgres: PgConnection,
+};
+const Database = dbOptions[DBMS];
 
 const getRandomId = () => Math.floor(Math.random() * dbSize);
 
@@ -93,7 +99,7 @@ const runTests = async () => {
   console.log(`\n\ntesting ${DBMS}`);
   console.log('===================================\n');
 
-  const db = await new MongoConnection().connect(MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION);
+  const db = await new Database().connect();
 
   // 5 synchronous queries on the same item
   const testId = getRandomId();

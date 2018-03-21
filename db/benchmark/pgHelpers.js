@@ -9,7 +9,17 @@ class PgConnection {
     this.tableName = null;
   }
 
-  connect() {}
+  connect() {
+    this.pool = new Pool({
+      PGUSER,
+      PGHOST,
+      PGDATABASE,
+      PGPASSWORD,
+      PGPORT,
+      PG_TABLENAME,
+    });
+    this.tableName = PG_TABLENAME;
+  }
 
   disconnect() {}
 

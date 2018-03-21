@@ -40,7 +40,4 @@ class PgConnection {
   }
 }
 
-const db = new PgConnection().connect();
-db.getQueryTime(3).then(res => console.log(res));
-
 module.exports = PgConnection;

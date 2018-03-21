@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool, Client } = require('pg');
+const pgtools = require('pgtools');
 const generateRecord = require('./generateRecord');
 
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT, PG_TABLENAME } = process.env;
@@ -44,7 +45,26 @@ const createTable = ({ pool }, tableName) => {
   return pool.query(queryString);
 };
 
-const preSeed = async () => {
+const createDbIfNone = async () => {
+  console.log(`creating database ${PGDATABASE} if it does not yet exist`)
+  try {
+    await pgtools.createdb({
+      user: PGUSER,
+      password: PGPASSWORD,
+      port: PGPORT,
+      host: PGHOST,
+    }, PGDATABASE);
+    console.log(`created database ${PGDATABASE}`);
+  } catch (error) {
+    if (error.name === 'duplicate_database') {
+      console.log('database already exists - no recreation needed');
+    } else {
+      return Promise.reject(error);
+    }
+  }
+};
+
+const resetTableIfExists = async () => {
   console.log('Dropping existing table if it exists');
   const { pool } = await connectToDb();
   await dropTable({ pool }, PG_TABLENAME);
@@ -54,12 +74,20 @@ const preSeed = async () => {
   await disconnectFromDb({ pool });
 };
 
-// TODO: indexing?
-const postSeed = async () => {
+const preSeed = async () => {
+  await createDbIfNone();
+  await resetTableIfExists();
+};
+
+const indexColumn = async(colName) => {
   console.log('Creating unique index on id column');
   const { pool } = await connectToDb();
-  await pool.query(`CREATE UNIQUE INDEX id_index_${PG_TABLENAME} ON ${PG_TABLENAME} (id);`);
+  await pool.query(`CREATE UNIQUE INDEX ${colName}_index_${PG_TABLENAME} ON ${PG_TABLENAME} (${colName});`);
   await disconnectFromDb({ pool });
+};
+
+const postSeed = async () => {
+  await indexColumn('id');
 };
 
 // returns a promise via pool.query

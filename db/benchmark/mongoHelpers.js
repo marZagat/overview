@@ -36,7 +36,7 @@ class MongoConnection {
     try {
       const { executionStats } = await this.find(id).explain();
       if (executionStats.executionSuccess === true) {
-        return Promise.resolve(executionStats);
+        return executionStats;
       }
       return Promise.reject(new Error('query executionSuccess !== true'));
     } catch (error) {
@@ -44,7 +44,14 @@ class MongoConnection {
     }
   }
 
-  getQueryTime(id) {}
+  async getQueryTime(id) {
+    try {
+      const { executionTimeMillis } = await this.getExecutionStats(id);
+      return executionTimeMillis;
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
 }
 
 module.exports = MongoConnection;

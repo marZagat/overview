@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "seed": "node db/seed/seed.js",
     "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js",
-    "db:benchmarks": "node db/dbBenchmarkTests.js && DB_NAME=marzagat_overview_old INDEX=id ID_TYPE=string node db/dbBenchmarkTests.js"
+    "db:benchmarks": "node db/benchmark/dbBenchmarkTests.js"
   },
   "dependencies": {
     "axios": "^0.18.0",

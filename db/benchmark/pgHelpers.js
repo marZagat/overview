@@ -19,15 +19,28 @@ class PgConnection {
       PG_TABLENAME,
     });
     this.tableName = PG_TABLENAME;
+    return this;
   }
 
-  disconnect() {}
+  disconnect() {
+    this.pool.end();
+  }
 
-  find(id) {}
+  getExecutionStats(id) {
+    return this.pool.query(`EXPLAIN ANALYZE SELECT * FROM ${this.tableName} WHERE id = ${id};`);
+  }
 
-  getExecutionStats(id) {}
-
-  getQueryTime(id) {}
+  async getQueryTime(id) {
+    const executionStats = await this.getExecutionStats(id);
+    const str = executionStats.rows[0]['QUERY PLAN'];
+    const start = str.indexOf('actual time=') + ('actual time=').length;
+    const end = str.indexOf('..', start);
+    const queryTime = parseFloat(str.slice(start, end));
+    return queryTime;
+  }
 }
+
+const db = new PgConnection().connect();
+db.getQueryTime(3).then(res => console.log(res));
 
 module.exports = PgConnection;

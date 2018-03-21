@@ -4,7 +4,12 @@ const { MongoClient } = require('mongodb');
 const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
 
 class MongoConnection {
-  constructor() {}
+  constructor() {
+    this.url = null;
+    this.client = null;
+    this.db = null;
+    this.collection = null;
+  }
 
   connect() {}
 

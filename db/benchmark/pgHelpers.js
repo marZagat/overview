@@ -4,7 +4,10 @@ const { Pool, Client } = require('pg');
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT, PG_TABLENAME } = process.env;
 
 class PgConnection {
-  constructor() {}
+  constructor() {
+    this.pool = null;
+    this.tableName = null;
+  }
 
   connect() {}
 

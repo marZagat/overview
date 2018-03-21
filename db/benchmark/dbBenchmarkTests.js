@@ -1,5 +1,4 @@
 require('dotenv').config();
-const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 const stats = require('stats-lite');
 const MongoConnection = require('./mongoHelpers');
@@ -44,82 +43,104 @@ const printResults = {
 const test = {
   sameId: {
     sync: async (db, numQueries, testId = getRandomId()) => {
-      const queryTimes = [];
-      for (let i = 0; i < numQueries; i++) {
-        const queryTime = await db.getQueryTime(testId);
-        queryTimes.push(queryTime);
-      }
-      if (numQueries === 1) {
-        printResults.one(`single synchronous query on id ${testId}`, queryTimes[0]);
-      } else {
-        printResults.stats(`${numQueries} synchronous queries on same id ${testId}`, queryTimes);
+      try {
+        const queryTimes = [];
+        for (let i = 0; i < numQueries; i++) {
+          const queryTime = await db.getQueryTime(testId);
+          queryTimes.push(queryTime);
+        }
+        if (numQueries === 1) {
+          printResults.one(`single synchronous query on id ${testId}`, queryTimes[0]);
+        } else {
+          printResults.stats(`${numQueries} synchronous queries on same id ${testId}`, queryTimes);
+        }
+      } catch (error) {
+        console.error(error);
       }
     },
 
     async: async (db, numQueries, testId = getRandomId()) => {
-      let queryTimes = [];
-      for (let i = 0; i < numQueries; i++) {
-        const queryTime = db.getQueryTime(testId);
-        queryTimes.push(queryTime);
-      }
-      queryTimes = await Promise.all(queryTimes);
-      if (numQueries === 1) {
-        printResults.one(`single async query on id ${testId}`, queryTimes[0]);
-      } else {
-        printResults.stats(`${numQueries} async queries on same id ${testId}`, queryTimes);
+      try {
+        let queryTimes = [];
+        for (let i = 0; i < numQueries; i++) {
+          const queryTime = db.getQueryTime(testId);
+          queryTimes.push(queryTime);
+        }
+        queryTimes = await Promise.all(queryTimes);
+        if (numQueries === 1) {
+          printResults.one(`single async query on id ${testId}`, queryTimes[0]);
+        } else {
+          printResults.stats(`${numQueries} async queries on same id ${testId}`, queryTimes);
+        }
+      } catch (error) {
+        console.error(error);
       }
     },
   },
 
   randomIds: {
     sync: async (db, numQueries) => {
-      const queryTimes = [];
-      for (let i = 0; i < numQueries; i++) {
-        const testId = getRandomId();
-        const queryTime = await db.getQueryTime(testId);
-        queryTimes.push(queryTime);
+      try {
+        const queryTimes = [];
+        for (let i = 0; i < numQueries; i++) {
+          const testId = getRandomId();
+          const queryTime = await db.getQueryTime(testId);
+          queryTimes.push(queryTime);
+        }
+        printResults.stats(`${numQueries} synchronous queries on different random ids`, queryTimes);
+      } catch (error) {
+        console.error(error);
       }
-      printResults.stats(`${numQueries} synchronous queries on different random ids`, queryTimes);
     },
 
     async: async (db, numQueries) => {
-      let queryTimes = [];
-      for (let i = 0; i < numQueries; i++) {
-        const testId = getRandomId();
-        const queryTime = db.getQueryTime(testId);
-        queryTimes.push(queryTime);
+      try {
+        let queryTimes = [];
+        for (let i = 0; i < numQueries; i++) {
+          const testId = getRandomId();
+          const queryTime = db.getQueryTime(testId);
+          queryTimes.push(queryTime);
+        }
+        queryTimes = await Promise.all(queryTimes);
+        printResults.stats(`${numQueries} async queries on different random ids`, queryTimes);
+      } catch (error) {
+        console.error(error);
       }
-      queryTimes = await Promise.all(queryTimes);
-      printResults.stats(`${numQueries} async queries on different random ids`, queryTimes);
     },
   },
 };
 
 const runTests = async () => {
-  console.log(`\n\ntesting ${DBMS}`);
-  console.log('===================================\n');
+  try {
+    console.log(`\n\ntesting ${DBMS}. Pool size: ${process.env.POOL_SIZE}`);
+    console.log('===================================\n');
 
-  const db = await new Database().connect();
+    console.log('connecting');
+    const db = await new Database().connect();
+    console.log('connected');
 
-  // 5 synchronous queries on the same item
-  const testId = getRandomId();
-  for (let i = 0; i < 5; i++) {
-    await test.sameId.sync(db, 1, testId);
+    // 5 synchronous queries on the same item
+    const testId = getRandomId();
+    for (let i = 0; i < 5; i++) {
+      await test.sameId.sync(db, 1, testId);
+    }
+
+    await test.sameId.async(db, 1000);
+
+    await test.sameId.sync(db, 1000);
+
+    await test.sameId.async(db, 10000);
+
+    await test.sameId.sync(db, 10000);
+
+    await test.randomIds.async(db, 1000);
+
+    await test.randomIds.sync(db, 1000);
+
+    db.disconnect();
+  } catch (error) {
+    console.error(error);
   }
-
-  await test.sameId.async(db, 1000);
-
-  await test.sameId.sync(db, 1000);
-
-  await test.sameId.async(db, 10000);
-
-  await test.sameId.sync(db, 10000);
-
-  await test.randomIds.async(db, 1000);
-
-  await test.randomIds.sync(db, 1000);
-
-  db.disconnect();
 };
 
-runTests();
+runTests().catch(error => console.error(error));

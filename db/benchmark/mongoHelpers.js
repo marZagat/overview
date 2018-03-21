@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
+const Promise = require('bluebird');
 
 const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
 
@@ -22,11 +23,26 @@ class MongoConnection {
     }
   }
 
-  disconnect() {}
+  disconnect() {
+    this.client.close();
+  }
 
-  getRecord(id) {}
+  // returns a cursor
+  find(id) {
+    return this.collection.find({ id });
+  }
 
-  getExecutionStats(id) {}
+  async getExecutionStats(id) {
+    try {
+      const { executionStats } = await this.find(id).explain();
+      if (executionStats.executionSuccess === true) {
+        return Promise.resolve(executionStats);
+      }
+      return Promise.reject(new Error('query executionSuccess !== true'));
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
 
   getQueryTime(id) {}
 }

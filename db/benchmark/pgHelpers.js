@@ -2,7 +2,6 @@ require('dotenv').config();
 const { Pool, Client } = require('pg');
 
 const { PGUSER, PGHOST, PGDATABASE, PGPASSWORD, PGPORT, PG_TABLENAME } = process.env;
-const POOL_SIZE = parseInt(process.env.POOL_SIZE, 10) || 5;
 
 class PgConnection {
   constructor() {
@@ -10,7 +9,7 @@ class PgConnection {
     this.tableName = null;
   }
 
-  connect() {
+  connect(poolSize = 5) {
     this.pool = new Pool({
       PGUSER,
       PGHOST,
@@ -18,7 +17,7 @@ class PgConnection {
       PGPASSWORD,
       PGPORT,
       PG_TABLENAME,
-      max: POOL_SIZE,
+      max: poolSize,
     });
     this.tableName = PG_TABLENAME;
     return this;

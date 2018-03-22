@@ -3,9 +3,12 @@ const Promise = require('bluebird');
 const stats = require('stats-lite');
 const MongoConnection = require('./mongoHelpers');
 const PgConnection = require('./pgHelpers');
+const fs = require('fs-extra');
+const path = require('path');
 
 const { DBMS } = process.env;
 const dbSize = parseInt(process.env.DB_SIZE, 10) || 10000000;
+const OUTPUT_FILE = path.resolve(__dirname, 'results', 'benchmarkResults.csv');
 
 const dbOptions = {
   mongo: MongoConnection,
@@ -18,11 +21,13 @@ const getRandomId = () => Math.floor(Math.random() * dbSize);
 const getSummaryStats = array => (
   {
     min: Math.min(...array),
+    p25: stats.percentile(array, 0.25),
     median: stats.median(array),
     p95: stats.percentile(array, 0.95),
     p99: stats.percentile(array, 0.99),
     p995: stats.percentile(array, 0.995),
     max: Math.max(...array),
+    avg: stats.mean(array),
   }
 );
 
@@ -40,6 +45,19 @@ const printResults = {
   },
 };
 
+const writeResults = {
+  one: async (queryTime, syncOrAsync, sameOrRandomId) => {
+    const row = [new Date().toString(), DBMS, process.env.POOL_SIZE, 1, syncOrAsync, sameOrRandomId, queryTime];
+    await fs.appendFile(OUTPUT_FILE, `${row.join(', ')}\n`);
+  },
+
+  stats: async (queryTimes, syncOrAsync, sameOrRandomId) => {
+    const { min, p25, median, p95, p99, p995, max, avg } = getSummaryStats(queryTimes);
+    const row = [new Date().toString(), DBMS, process.env.POOL_SIZE, queryTimes.length, syncOrAsync, sameOrRandomId, min, p25, median, p95, p99, p995, max, avg];
+    await fs.appendFile(OUTPUT_FILE, `${row.join(', ')}\n`);
+  },
+};
+
 const test = {
   sameId: {
     sync: async (db, numQueries, testId = getRandomId()) => {
@@ -51,8 +69,10 @@ const test = {
         }
         if (numQueries === 1) {
           printResults.one(`single synchronous query on id ${testId}`, queryTimes[0]);
+          await writeResults.one(queryTimes[0], 'sync', 'same');
         } else {
           printResults.stats(`${numQueries} synchronous queries on same id ${testId}`, queryTimes);
+          await writeResults.stats(queryTimes, 'sync', 'same');
         }
       } catch (error) {
         console.error(error);
@@ -69,8 +89,10 @@ const test = {
         queryTimes = await Promise.all(queryTimes);
         if (numQueries === 1) {
           printResults.one(`single async query on id ${testId}`, queryTimes[0]);
+          await writeResults.one(queryTimes[0], 'async', 'same');
         } else {
           printResults.stats(`${numQueries} async queries on same id ${testId}`, queryTimes);
+          await writeResults.stats(queryTimes, 'async', 'same');
         }
       } catch (error) {
         console.error(error);
@@ -88,6 +110,7 @@ const test = {
           queryTimes.push(queryTime);
         }
         printResults.stats(`${numQueries} synchronous queries on different random ids`, queryTimes);
+        await writeResults.stats(queryTimes, 'sync', 'random');
       } catch (error) {
         console.error(error);
       }
@@ -103,6 +126,7 @@ const test = {
         }
         queryTimes = await Promise.all(queryTimes);
         printResults.stats(`${numQueries} async queries on different random ids`, queryTimes);
+        await writeResults.stats(queryTimes, 'async', 'random');
       } catch (error) {
         console.error(error);
       }
@@ -111,6 +135,13 @@ const test = {
 };
 
 const runTests = async () => {
+  try {
+    const fd = await fs.open(OUTPUT_FILE, 'wx');
+    const row = ['timestamp', 'DBMS', 'pool size', 'numQueries', 'sync or async', 'same id or random', 'min', 'p25', 'median', 'p95', 'p99', 'p995', 'max', 'average'];
+    await fs.write(fd, `${row.join(', ')}\n`);
+  } catch (error) {
+    console.log('file already exists');
+  }
   try {
     console.log(`\n\ntesting ${DBMS}. Pool size: ${process.env.POOL_SIZE}`);
     console.log('===================================\n');

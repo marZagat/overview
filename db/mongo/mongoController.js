@@ -7,8 +7,8 @@ const {
   MONGO_COLLECTION,
 } = process.env;
 
-let client = null;
-let collection = null;
+let client;
+let collection;
 
 const connect = async () => {
   const url = `mongodb://${MONGO_ADDRESS}/`;

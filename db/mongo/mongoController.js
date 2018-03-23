@@ -1,33 +1,33 @@
-const mongoose = require('mongoose');
+require('dotenv').config();
+const { MongoClient } = require('mongodb');
 
-const restaurantSchema = mongoose.Schema({
-  id: {
-    type: Number,
-    unique: true,
-  },
-  name: String,
-  tagline: String,
-  type: String,
-  vicinity: String,
-  priceLevel: Number,
-  zagatFood: Number,
-  zagatDecor: Number,
-  zagatService: Number,
-  longDescription: String,
-}, { autoIndex: false });
+const {
+  MONGO_ADDRESS,
+  MONGO_DB_NAME,
+  MONGO_COLLECTION,
+} = process.env;
 
-const RestaurantModel = mongoose.model('Restaurant', restaurantSchema);
+let client = null;
+let collection = null;
 
-const findOneById = (id, callback) => {
-  RestaurantModel.find({ id }, callback);
+const connect = async () => {
+  const url = `mongodb://${MONGO_ADDRESS}/`;
+  client = await MongoClient.connect(url);
+  collection = client.db(MONGO_DB_NAME).collection(MONGO_COLLECTION);
 };
 
-const insertMany = (restaurant, callback) => {
-  return RestaurantModel.insertMany(restaurant, callback);
+const disconnect = async () => {
+  await client.close();
+  client = null;
+  collection = null;
 };
 
-const count = () => RestaurantModel.count();
+const findOneById = id => (
+  collection.find({ id }, { projection: { _id: 0 } }).toArray()
+);
 
-exports.findOneById = findOneById;
-exports.insertMany = insertMany;
-exports.count = count;
+module.exports = {
+  findOneById,
+  connect,
+  disconnect,
+};

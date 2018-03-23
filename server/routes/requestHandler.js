@@ -1,14 +1,14 @@
 const db = require('../../db/mongo/mongoController.js');
 
 const actions = {
-  GET: function respondToGETRequest(req, res) {
-    db.findOneById(req.params.id, (err, result) => {
-      if (err) {
-        res.send(err);
-      } else {
-        res.send(result);
-      }
-    });
+  GET: async (req, res) => {
+    try {
+      const idNum = parseInt(req.params.id, 10);
+      const result = await db.findOneById(idNum);
+      res.send(result);
+    } catch (error) {
+      res.statusCode(404).send(error);
+    }
   },
 };
 

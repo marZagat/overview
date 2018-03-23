@@ -1,15 +1,11 @@
 require('newrelic');
-const mongoose = require('mongoose');
+const db = require('../db/mongo/mongoController');
 // const webpack = require('webpack');
 // const webpackDevMiddleware = require('webpack-dev-middleware');
 // const config = require('../webpack.config.js');
 const app = require('./app');
 
-const dbAddress = process.env.DB_ADDRESS || 'localhost';
-const dbName = process.env.DB_name || 'marzagat_overview';
-
-
-mongoose.connect(`mongodb://${dbAddress}/${dbName}`);
+db.connect();
 // const compiler = webpack(config);
 
 // app.use(webpackDevMiddleware(compiler, {

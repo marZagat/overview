@@ -6,31 +6,37 @@ const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
 
 class MongoConnection {
   constructor() {
-    this.url = null;
+    this.url = `mongodb://${MONGO_ADDRESS}/`;
     this.client = null;
     this.db = null;
     this.collection = null;
   }
 
-  async connect() {
+  async connect(poolSize = 5) {
     try {
-      this.url = `mongodb://${MONGO_ADDRESS}/`;
-      this.client = await MongoClient.connect(this.url);
+      this.client = await MongoClient.connect(this.url, { poolSize });
       this.db = await this.client.db(MONGO_DB_NAME);
       this.collection = await this.db.collection(MONGO_COLLECTION);
       return this;
     } catch (error) {
-      return Promise.reject(error);
+      return console.error(error);
     }
   }
 
-  disconnect() {
-    this.client.close();
+  async disconnect() {
+    try {
+      await this.client.close();
+      this.client = null;
+      this.db = null;
+      this.collection = null;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   // returns a cursor
   find(id) {
-    return this.collection.find({ id });
+    return this.collection.find({ id }, { projection: { _id: 0 } });
   }
 
   async getExecutionStats(id) {

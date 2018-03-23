@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "seed": "node db/seed/seed.js",
     "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js",
-    "db:benchmarks": "node db/dbBenchmarkTests.js && DB_NAME=marzagat_overview_old INDEX=id ID_TYPE=string node db/dbBenchmarkTests.js"
+    "db:benchmarks": "node db/benchmark/dbBenchmarkTests.js"
   },
   "dependencies": {
     "axios": "^0.18.0",
@@ -26,9 +26,11 @@
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "faker": "^4.1.0",
+    "fs-extra": "^5.0.0",
     "mongodb": "^3.0.4",
     "mongoose": "^5.0.7",
     "morgan": "^1.9.0",
+    "newrelic": "^3.2.0",
     "pg": "^7.4.1",
     "pgtools": "^0.3.0",
     "prop-types": "^15.6.1",

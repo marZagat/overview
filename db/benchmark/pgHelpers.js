@@ -9,7 +9,7 @@ class PgConnection {
     this.tableName = null;
   }
 
-  connect() {
+  connect(poolSize = 5) {
     this.pool = new Pool({
       PGUSER,
       PGHOST,
@@ -17,6 +17,7 @@ class PgConnection {
       PGPASSWORD,
       PGPORT,
       PG_TABLENAME,
+      max: poolSize,
     });
     this.tableName = PG_TABLENAME;
     return this;
@@ -39,8 +40,5 @@ class PgConnection {
     return queryTime;
   }
 }
-
-const db = new PgConnection().connect();
-db.getQueryTime(3).then(res => console.log(res));
 
 module.exports = PgConnection;

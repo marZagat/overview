@@ -1,3 +1,4 @@
+require('newrelic');
 const mongoose = require('mongoose');
 // const webpack = require('webpack');
 // const webpackDevMiddleware = require('webpack-dev-middleware');

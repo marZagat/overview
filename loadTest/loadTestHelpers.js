@@ -1,4 +1,4 @@
-const numPopularIds = 1000;
+const numPopularIds = 10000;
 const sizeOfDb = 10000000;
 
 const setPopularId = (requestParams, context, ee, next) => {

@@ -14,7 +14,7 @@ config:
   processor: "./loadTestHelpers.js"
 scenarios:
   - name: "get popular id"
-    weight: 15
+    weight: 80
     beforeRequest: "setPopularId"
     flow:
       - loop:
@@ -22,7 +22,7 @@ scenarios:
             url: "/api/restaurants/{{ id }}/overview"
         count: 50
   - name: "get regular id"
-    weight: 85
+    weight: 20
     beforeRequest: "setRegularId"
     flow:
       - loop:

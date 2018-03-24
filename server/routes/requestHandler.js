@@ -3,8 +3,7 @@ const db = require('../../db/mongo/mongoController.js');
 const actions = {
   GET: async (req, res) => {
     try {
-      const idNum = parseInt(req.params.id, 10);
-      const result = await db.findOneById(idNum);
+      const result = await db.findOneById(req.params.id);
       res.send(result);
     } catch (error) {
       res.statusCode(404).send(error);

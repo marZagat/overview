@@ -2,7 +2,7 @@ require('newrelic');
 
 const express = require('express');
 const cors = require('cors');
-const db = require('../db/mongo/mongoController');
+const db = require('../db/controllers/mongoController');
 
 const app = express();
 db.connect();

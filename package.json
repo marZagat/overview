@@ -39,6 +39,7 @@
     "prop-types": "^15.6.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "redis": "^2.8.0",
     "request": "^2.83.0",
     "stats-lite": "^2.1.0"
   },

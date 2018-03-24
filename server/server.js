@@ -1,7 +1,6 @@
 require('newrelic');
 
 const express = require('express');
-const morgan = require('morgan');
 const cors = require('cors');
 const db = require('../db/mongo/mongoController');
 
@@ -9,7 +8,6 @@ const app = express();
 db.connect();
 
 app.use(cors());
-app.use(morgan('dev'));
 app.use('/restaurants/:id', express.static('client/dist'));
 
 app.get('/api/restaurants/:id/overview', async (req, res) => {

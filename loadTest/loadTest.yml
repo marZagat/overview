@@ -1,0 +1,31 @@
+config:
+  target: "http://localhost:3002"
+  phases:
+    - name: "warm up"
+      duration: 10
+      arrivalRate: 1
+    - name: "ramp up"
+      duration: 30
+      arrivalRate: 1
+      rampTo: 10
+    - name: "sustained load"
+      duration: 60
+      arrivalRate: 10
+  processor: "./loadTestHelpers.js"
+scenarios:
+  - name: "get popular id"
+    weight: 15
+    beforeRequest: "setPopularId"
+    flow:
+      - loop:
+        - get:
+            url: "/api/restaurants/{{ id }}/overview"
+        count: 50
+  - name: "get regular id"
+    weight: 85
+    beforeRequest: "setRegularId"
+    flow:
+      - loop:
+        - get:
+            url: "/api/restaurants/{{ id }}/overview"
+        count: 50

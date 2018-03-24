@@ -23,7 +23,7 @@ const disconnect = async () => {
 };
 
 const findOneById = id => (
-  collection.find({ id }, { projection: { _id: 0 } }).toArray()
+  collection.find({ id }).toArray()
 );
 
 module.exports = {

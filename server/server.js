@@ -28,6 +28,15 @@ app.listen(3002, () => {
   console.log('Listening on port 3002');
 });
 
+process.on('beforeExit', async () => {
+  try {
+    await db.disconnect();
+  } catch (error) {
+    console.error(error);
+  }
+  process.exit();
+});
+
 // const webpack = require('webpack');
 // const webpackDevMiddleware = require('webpack-dev-middleware');
 // const config = require('../webpack.config.js');

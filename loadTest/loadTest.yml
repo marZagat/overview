@@ -1,16 +1,16 @@
 config:
   target: "http://localhost:3002"
+  http:
+    timeout: 2
+    pool: 10
   phases:
-    - name: "warm up"
+    - name: "ramp up"
       duration: 10
       arrivalRate: 1
-    - name: "ramp up"
-      duration: 30
-      arrivalRate: 1
-      rampTo: 10
+      rampTo: 20
     - name: "sustained load"
-      duration: 60
-      arrivalRate: 10
+      duration: 10
+      arrivalRate: 20
   processor: "./loadTestHelpers.js"
 scenarios:
   - name: "get popular id"
@@ -20,7 +20,7 @@ scenarios:
       - loop:
         - get:
             url: "/api/restaurants/{{ id }}/overview"
-        count: 50
+        count: 1000
   - name: "get regular id"
     weight: 20
     beforeRequest: "setRegularId"
@@ -28,4 +28,4 @@ scenarios:
       - loop:
         - get:
             url: "/api/restaurants/{{ id }}/overview"
-        count: 50
+        count: 1000

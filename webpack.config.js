@@ -1,42 +1,62 @@
+const webpack = require('webpack');
 const path = require('path');
-const SRC_DIR = path.join(__dirname, '/client/src');
-const DIST_DIR = path.join(__dirname, '/client/dist');
 
-module.exports = {
+const SRC_DIR = path.resolve(__dirname, 'client/src');
+const DIST_DIR = path.resolve(__dirname, 'client/dist');
+const NODE_MODULES = path.resolve(__dirname, 'node_modules');
+
+const commonSettings = {
+  context: SRC_DIR,
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx', '.json'],
   },
-  devtool: 'source-map',
-  entry: `${SRC_DIR}/index.jsx`,
-  output: {
-    path: DIST_DIR,
-    publicPath: '/',
-    filename: 'bundle.js'
-  },
-  module : {
-    loaders : [
+  module: {
+    loaders: [
       {
         test: /\.jsx?/,
-        include: SRC_DIR,
-        exclude: ['node_modules'],
-        loader: 'babel-loader',      
+        include: [SRC_DIR],
+        exclude: [NODE_MODULES],
+        loader: 'babel-loader',
         query: {
-          presets: ['react', 'env']
-        }
+          presets: ['react', 'env'],
+        },
       },
       {
         test: /\.css$/,
         use: [
           'style-loader',
           'css-loader'
-        ]
-      }
-      // {
-      //   test: /\.(png|svg|jpg|gif)$/,
-      //   use: [
-      //     'file-loader'
-      //   ]
-      // },
-    ]
-  }
+        ],
+      },
+    ],
+  },
 };
+
+const clientSideBundleSettings = Object.assign(
+  {
+    entry: './index.client.js',
+    output: {
+      path: DIST_DIR,
+      filename: 'app.client.js',
+    },
+  },
+  commonSettings,
+);
+
+const serverSideBundleSettings = Object.assign(
+  {
+    entry: './index.node.js',
+    target: 'node',
+    output: {
+      path: DIST_DIR,
+      filename: 'app.node.js',
+      libraryTarget: 'commonjs-module',
+    },
+  },
+  commonSettings,
+);
+
+module.exports = [
+  clientSideBundleSettings,
+  serverSideBundleSettings,
+];

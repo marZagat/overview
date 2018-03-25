@@ -67,3 +67,6 @@ bundle.js.map
 # deliverables
 deliverables/
 db/benchmark/results/
+
+# redis
+dump.rdb

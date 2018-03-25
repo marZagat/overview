@@ -2,7 +2,7 @@ require('newrelic');
 
 const express = require('express');
 const cors = require('cors');
-const db = require('../db/controllers/mongoController');
+const db = require('../db/controllers/db');
 
 const app = express();
 db.connect();
@@ -10,18 +10,18 @@ db.connect();
 app.use(cors());
 app.use('/restaurants/:id', express.static('client/dist'));
 
-app.get('/api/restaurants/:id/overview', async (req, res) => {
+app.get('/api/restaurants/:id/overview', async (request, response) => {
   try {
-    const result = await db.findOneById(req.params.id);
-    res.send(result);
+    const result = await db.findOneById(request.params.id);
+    response.send(result);
   } catch (error) {
-    res.status(404).send(error);
+    response.status(404).send(error);
   }
 });
 
-app.get('/', (req, res) => {
+app.get('/', (request, response) => {
   const randomId = Math.floor(Math.random() * 10000000);
-  res.redirect(`/restaurants/${randomId}`);
+  response.redirect(`/restaurants/${randomId}`);
 });
 
 app.listen(3002, () => {

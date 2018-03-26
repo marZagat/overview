@@ -21,18 +21,20 @@ const commonSettings = {
           presets: ['react', 'env'],
         },
       },
-      {
-        test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader'
-        ],
-      },
+      // {
+      //   test: /\.css$/,
+      //   use: [
+      //     'style-loader',
+      //     'css-loader'
+      //   ],
+      // },
     ],
   },
 };
 
 const clientSideBundleSettings = Object.assign(
+  {},
+  commonSettings,
   {
     entry: './index.client.js',
     output: {
@@ -40,10 +42,11 @@ const clientSideBundleSettings = Object.assign(
       filename: 'app.client.js',
     },
   },
-  commonSettings,
 );
 
 const serverSideBundleSettings = Object.assign(
+  {},
+  commonSettings,
   {
     entry: './index.node.js',
     target: 'node',
@@ -53,7 +56,6 @@ const serverSideBundleSettings = Object.assign(
       libraryTarget: 'commonjs-module',
     },
   },
-  commonSettings,
 );
 
 module.exports = [

@@ -1,4 +1,4 @@
 import Overview from './components/Overview';
-import './style.css';
+// import './style.css';
 
 export default Overview;

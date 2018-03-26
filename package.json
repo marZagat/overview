@@ -17,11 +17,14 @@
     "test:watch": "jest --watch",
     "seed": "node db/seed/seed.js",
     "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js",
-    "db:benchmarks": "node db/benchmark/dbBenchmarkTests.js"
+    "db:benchmarks": "node db/benchmark/dbBenchmarkTests.js",
+    "artillery": "artillery run loadTest/loadTest.yml"
   },
   "dependencies": {
+    "artillery": "^1.6.0-14",
     "axios": "^0.18.0",
     "bluebird": "^3.5.1",
+    "bower": "^1.8.2",
     "cors": "^2.8.4",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",

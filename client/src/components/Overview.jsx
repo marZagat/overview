@@ -27,7 +27,8 @@ class Overview extends React.Component {
   }
 
   fetchRestaurantInfo() {
-    const id = window.location.href.split('/')[4];
+    // const id = window.location.href.split('/')[4];
+    const { id } = this.props;
 
     axios.get(`/api/restaurants/${id}/overview`)
       .then((response) => {

@@ -61,8 +61,8 @@ typings/
 coverage/
 
 #webpack output
-bundle.js
-bundle.js.map
+app.client.js
+app.node.js
 
 # deliverables
 deliverables/

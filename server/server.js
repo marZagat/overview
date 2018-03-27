@@ -9,6 +9,7 @@ db.connect();
 
 app.use(cors());
 app.use('/restaurants/:id', express.static('client/dist'));
+app.use(express.static('client/dist'));
 
 app.get('/api/restaurants/:id/overview', async (request, response) => {
   try {

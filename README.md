@@ -75,14 +75,10 @@ Steps to run using docker:
 1. Make sure Docker is installed and running on your machine
 1. From the project root directory, run `docker build -t overview .` (note the space between `overview` and `.`)
 1. You'll now need to seed the database from the command line. Data will be written to a volume which is attached to the running mongo container. Open another terminal window and check the running containers with `docker ps`. Assuming that the microservice container is named `overview_overview_1`, you'll then run the command:  
-  ```
-  docker exec -it overview_overview_1 yarn run seed
-  ```  
+  `docker exec -it overview_overview_1 yarn run seed`
     - This allows you to "enter" the command line within the running `overview_overview_1` container, and execute the `yarn run seed` command.  
     - You can alse set environment variables for the seed script using the `-e` flag for each environment variable:  
-  ```
-  docker exec -it -e SEED_NUM=1000 -e SEED_BATCH_SIZE=10 overview_overview_1 yarn run seed
-  ```  
+  `docker exec -it -e SEED_NUM=1000 -e SEED_BATCH_SIZE=10 overview_overview_1 yarn run seed`  
 1. After seeding, you can open up to a restaurantis such as `localhost:3002/restaurants/372` in your browser
 
 ## Credits

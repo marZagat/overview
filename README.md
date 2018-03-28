@@ -22,20 +22,16 @@ This service forms a part of the marZagat food review website: a limited emulati
 1. [Requirements](#requirements)
 1. [Development](#development)
 
+## Requirements
+
+- Node:9.5.0
+- MongoDB:3.6
+- Redis:3.2
+
 ## Usage
 
 > This project is running on port 3002.
 > http://127.0.0.1:3002
-
-## Requirements
-
-This project is using:
-- Node 9.5.0
-- Express
-- MongoDB
-- Jest
-- Enzyme
-- Webpack
 
 ## Development
 

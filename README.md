@@ -18,20 +18,32 @@ This service forms a part of the marZagat food review website: a limited emulati
 
 ## Table of Contents
 
-1. [Usage](#Usage)
-1. [Requirements](#requirements)
-1. [Development](#development)
+  1. [Usage](#Usage)
+  1. [Requirements](#requirements)
+  1. [Development](#development)
 
 ## Requirements
 
 - Node:9.5.0
 - MongoDB:3.6
 - Redis:3.2
+- Yarn package manager
 
 ## Usage
 
-> This project is running on port 3002.
-> http://127.0.0.1:3002
+1. Make sure your environment is set up with the correct [requirements](#requirements) for node, Mongo, Redis, and Yarn, above
+1. Install dependencies: `yarn install`
+1. Environment variables
+    1. {{add instructions for environment variables here}}
+1. Seed the database:  
+    1. Run mongo daemon with `mongod` if not already running
+    1. From project directory, run `yarn run seed`
+1. Compile client-side code: `yarn run build`
+1. Start up the server:
+    1. Run mongo daemon with `mongod` if not already running
+    1. Run redis server with `redis-server` if not already running
+    1. Spin up the server with `yarn start`
+    1. View service in browser at `localhost:3002`
 
 ## Development
 

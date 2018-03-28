@@ -1,13 +1,20 @@
-# WeGot - Restaurant Rating Service
+# marZagat - Restaurant Rating Service
 
-> This project is a limited emulation Zagat.com's restaurant description page
+## Purpose  
+
+This service forms a part of the marZagat food review website: a limited emulation of [Zagat.com](https://zagat.com)'s restaurant description page. The Overview service renders a summary description and aggregate ratings based on a restaurant's reviews.
 
 ## Related Projects
 
-  - https://github.com/bamboo-connection/gallery
-  - https://github.com/bamboo-connection/overview
-  - https://github.com/bamboo-connection/map-side-bar
-  - https://github.com/bamboo-connection/recommendations
+  - Proxy
+    - [marZagat proxy server](https://github.com/marZagat/proxy-moriah)
+  - Microservices
+    - [Gallery](https://github.com/marZagat/Gallery)
+    - [Overview](https://github.com/bamboo-connection/overview)
+    - [Business Info](https://github.com/marZagat/businessinfo)
+    - [Recommendations](https://github.com/marZagat/recommendations)
+  - Inherited codebase
+    - [Bamboo Connection: WeGot](https://github.com/bamboo-connection)
 
 ## Table of Contents
 
@@ -37,7 +44,7 @@ This project is no longer using webpack-dev-middleware!!! You need to run webpac
 ### Installing Dependencies
 
 From within the root directory:
-```sh
+```
 Install dependencies: npm install OR yarn install
 Start webpack: npm run dev OR yarn dev
 Start server: npm start OR yarn start

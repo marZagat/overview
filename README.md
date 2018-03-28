@@ -44,4 +44,5 @@ Start server: npm start OR yarn start
 Spin up mongo on your computer and then: npm run seed OR yarn seed
 ```
 
-
+### Credits
+The front end of the marZagat app was built by [Bamboo Connection](https://github.com/bamboo-connection) as the WeGot client, and inherited by the [marZagat](https://github.com/marZagat) backend engineering team to load test and optimize performance at webscale. The front end for the Overview microservice was created by [@MadLicorice](https://github.com/MadLicorice).

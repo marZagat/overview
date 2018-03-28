@@ -63,17 +63,27 @@ This service forms a part of the marZagat food review website: a limited emulati
 
 ## Development
 
-This project is no longer using webpack-dev-middleware!!! You need to run webpack manually. See below.
+- Watch client folders for webpack rebuild: `yarn run build:watch`
+- Watch server and client folders for server restart: `yarn run start:watch`
 
-### Installing Dependencies
+## Docker
 
-From within the root directory:
-```
-Install dependencies: npm install OR yarn install
-Start webpack: npm run dev OR yarn dev
-Start server: npm start OR yarn start
-Spin up mongo on your computer and then: npm run seed OR yarn seed
-```
+You can also spin up and run this project with Docker using the `Dockerfile`, `docker-compose.yml`, and `.dockerignore` (all in the project root directory) to build a docker image of the microservice and connect to `mongo` and `redis` docker images within a Docker bridge network.
 
-### Credits
+Steps to run using docker:  
+
+1. Make sure Docker is installed and running on your machine
+1. From the project root directory, run `docker build -t overview .` (note the space between `overview` and `.`)
+1. You'll now need to seed the database from the command line. Data will be written to a volume which is attached to the running mongo container. Open another terminal window and check the running containers with `docker ps`. Assuming that the microservice container is named `overview_overview_1`, you'll then run the command:  
+  ```
+  docker exec -it overview_overview_1 yarn run seed
+  ```  
+    - This allows you to "enter" the command line within the running `overview_overview_1` container, and execute the `yarn run seed` command.  
+    - You can alse set environment variables for the seed script using the `-e` flag for each environment variable:  
+  ```
+  docker exec -it -e SEED_NUM=1000 -e SEED_BATCH_SIZE=10 overview_overview_1 yarn run seed
+  ```  
+1. After seeding, you can open up to a restaurantis such as `localhost:3002/restaurants/372` in your browser
+
+## Credits
 The front end of the marZagat app was built by [Bamboo Connection](https://github.com/bamboo-connection) as the WeGot client, and inherited by the [marZagat](https://github.com/marZagat) backend engineering team to load test and optimize performance at webscale. The front end for the Overview microservice was created by [@MadLicorice](https://github.com/MadLicorice).

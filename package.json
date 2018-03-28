@@ -16,7 +16,6 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch",
     "seed": "node db/seed/seed.js",
-    "docker-start": "DB_ADDRESS=database node db/seed.js && DB_ADDRESS=database node server/server.js",
     "db:benchmarks": "node db/benchmark/dbBenchmarkTests.js",
     "artillery": "artillery run loadTest/loadTest.yml"
   },

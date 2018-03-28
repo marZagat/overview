@@ -6,8 +6,8 @@ const PgConnection = require('./pgHelpers');
 const fs = require('fs-extra');
 const path = require('path');
 
-const { DBMS } = process.env;
-const DB_SIZE = parseInt(process.env.DB_SIZE, 10) || 10000000;
+const DBMS = process.env.DBMS || 'mongo';
+const DB_SIZE = parseInt(process.env.SEED_NUM, 10) || 10000000;
 const POOL_MIN = parseInt(process.env.POOL_MIN, 10) || 5;
 const POOL_MAX = parseInt(process.env.POOL_MAX, 10) || 5;
 

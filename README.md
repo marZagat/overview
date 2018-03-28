@@ -34,7 +34,23 @@ This service forms a part of the marZagat food review website: a limited emulati
 1. Make sure your environment is set up with the correct [requirements](#requirements) for node, Mongo, Redis, and Yarn, above
 1. Install dependencies: `yarn install`
 1. Environment variables
-    1. {{add instructions for environment variables here}}
+    1. To seed the database and run the server, you can customize certain values with environment variables in a `.env` file, in the root directory of the project. Below are the environment variables used in the project, with their defaults if no customization is provided:
+    ```
+    # mongo connection info
+    MONGO_ADDRESS=localhost
+    MONGO_DB_NAME=marzagat_overview
+    MONGO_COLLECTION=restaurants
+
+    # redis connection info
+    REDIS_ADDRESS=localhost
+
+    # seeding preferences
+    SEED_NUM=10000000
+    SEED_BATCH_SIZE=15000
+
+    # [optional] provide your own newrelic API key to track server metrics
+    NEWRELIC_LICENSE_KEY=
+    ```
 1. Seed the database:  
     1. Run mongo daemon with `mongod` if not already running
     1. From project directory, run `yarn run seed`

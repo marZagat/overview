@@ -1,12 +1,16 @@
+require('dotenv').config();
 const redis = require('redis');
 const Promise = require('bluebird');
 
 Promise.promisifyAll(redis.RedisClient.prototype);
 
+const REDIS_ADDRESS = process.env.REDIS_ADDRESS || 'localhost';
 let client;
 
 const connect = async () => {
-  client = await redis.createClient();
+  client = await redis.createClient({
+    host: REDIS_ADDRESS,
+  });
   client.on('error', error => console.error(error));
 };
 

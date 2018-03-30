@@ -1,0 +1,5 @@
+/node_modules/*
+/deliverables/*
+/.circleci/*
+/coverage/*
+/client/dist/app.*

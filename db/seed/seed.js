@@ -6,7 +6,7 @@ const pgHelpers = require('./pgSeedHelpers.js');
 
 const seedNum = parseInt(process.env.SEED_NUM, 10) || 10000000;
 const batchSize = parseInt(process.env.SEED_BATCH_SIZE, 10) || 15000;
-const DBMS = process.env.DBMS || mongo;
+const DBMS = process.env.DBMS || 'mongo';
 
 const dbOptions = {
   mongo: mongoHelpers,

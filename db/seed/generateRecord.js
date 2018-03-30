@@ -2,7 +2,7 @@ const faker = require('faker');
 
 module.exports = id => (
   {
-    id,
+    id: id.toString(),
     name: faker.commerce.productName(),
     tagline: faker.lorem.words((id % 4) + 3),
     type: faker.lorem.word(),

@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  overview:
+    build: .
+    image: overview
+    environment:
+      - MONGO_ADDRESS=mongo
+      - REDIS_ADDRESS=redis
+    depends_on:
+      - 'mongo'
+      - 'redis'
+    ports:
+      - 3002:3002
+
+  mongo:
+    image: mongo:3.6
+    volumes:
+      - overview-db:/var/lib/docker
+  
+  redis:
+    image: redis:3.2-alpine
+
+volumes:
+  overview-db:

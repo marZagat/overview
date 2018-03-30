@@ -11,8 +11,9 @@
   <div id="overview"></div>
   <script src="app.client.js"></script>
   <script>
+    const id = window.location.pathname.split('/')[2];
     ReactDOM.render(
-      React.createElement(Overview),
+      React.createElement(Overview, { id }),
       document.getElementById('overview')
     );
   </script>

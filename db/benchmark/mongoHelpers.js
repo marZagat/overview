@@ -2,7 +2,9 @@ require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const Promise = require('bluebird');
 
-const { MONGO_ADDRESS, MONGO_DB_NAME, MONGO_COLLECTION } = process.env;
+const MONGO_ADDRESS = process.env.MONGO_ADDRESS || 'localhost';
+const MONGO_DB_NAME = process.env.MONGO_DB_NAME || 'marzagat_overview';
+const MONGO_COLLECTION = process.env.MONGO_COLLECTION || 'restaurants';
 
 class MongoConnection {
   constructor() {
